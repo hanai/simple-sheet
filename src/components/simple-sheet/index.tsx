@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   getCellIndexByElement,
@@ -101,8 +95,16 @@ const SimpleSheet = (props) => {
     (e: React.MouseEvent<HTMLElement>) => {
       if (!selectingStateRef.current.flag) {
         const [rowIdx, colIdx] = getCellIndexByElement(e.target as HTMLElement);
-        if (e.button === 0 || e.button === 2) {
-          // select single cell when primary/secondary button click
+        if (
+          e.button === 0 ||
+          (e.button === 2 &&
+            (selectedState.cells == null ||
+              rowIdx < selectedState.cells.start[0] ||
+              rowIdx > selectedState.cells.end[0] ||
+              colIdx < selectedState.cells.start[1] ||
+              colIdx > selectedState.cells.end[1]))
+        ) {
+          // select single cell when primary click or secondary button click out of current selection
           setSelectedState(() => {
             return {
               rows: [],
@@ -125,7 +127,7 @@ const SimpleSheet = (props) => {
         }
       }
     },
-    []
+    [selectedState.cells]
   );
 
   const setSelectedStateWhenMouseMoveOrUp = useCallback(
