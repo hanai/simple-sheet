@@ -1,0 +1,10 @@
+@import '../variables.scss';
+
+.cols-header-container {
+  position: absolute;
+  top: 0;
+  left: $row-header-item-width - 1px;
+  display: flex;
+  flex-direction: row;
+  border-right: 1px solid $row-col-header-item-active-border-color;
+}

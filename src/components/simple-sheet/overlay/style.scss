@@ -1,0 +1,33 @@
+@import '../variables.scss';
+
+@mixin selection-base {
+  background-color: #0589f3;
+  z-index: 1;
+  position: absolute;
+}
+
+.sheet-overlay {
+  position: absolute;
+  top: $col-header-item-height - 1px;
+  left: $row-header-item-width - 1px;
+
+  .selection-l {
+    @include selection-base();
+    width: 1px;
+  }
+
+  .selection-r {
+    @include selection-base();
+    width: 1px;
+  }
+
+  .selection-t {
+    @include selection-base();
+    height: 1px;
+  }
+
+  .selection-b {
+    @include selection-base();
+    height: 1px;
+  }
+}

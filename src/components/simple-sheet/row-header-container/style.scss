@@ -1,0 +1,9 @@
+@import '../variables.scss';
+
+.rows-header-container {
+  position: absolute;
+  left: 0;
+  top: $col-header-item-height - 1px;
+  text-align: center;
+  border-bottom: 1px solid $row-col-header-item-active-border-color;
+}

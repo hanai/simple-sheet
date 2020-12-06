@@ -1,42 +1,44 @@
 import React, { memo, useCallback, useRef } from 'react';
 import classnames from 'classnames';
+import { numberToLetter } from '../utils';
 
-export interface RowHeaderItemProps {
+import './style.scss';
+
+export interface ColHeaderItemProps {
   index: number;
-  height: number;
+  width: number;
   selected: boolean;
   onResize: (index: number, height: number) => void;
   onSelect: (index: number) => void;
 }
 
-const RowHeaderItem = (props: RowHeaderItemProps) => {
-  const { index, height, selected, onResize, onSelect } = props;
-
-  const startYRef = useRef<number>(0);
-  const startHeightRef = useRef<number>(height);
+const ColHeaderItem = (props: ColHeaderItemProps) => {
+  const { index, width, onResize, selected, onSelect } = props;
+  const startXRef = useRef<number>(0);
+  const startWidthRef = useRef<number>(width);
   const triggerRef = useRef<HTMLDivElement>(null);
 
   const handleDragStart = useCallback(
     (e: React.DragEvent) => {
-      startYRef.current = e.clientY;
-      startHeightRef.current = height;
+      startXRef.current = e.clientX;
+      startWidthRef.current = width;
       triggerRef.current?.setPointerCapture(1);
     },
-    [height]
+    [width]
   );
 
   const handleDrag = useCallback(
     (e: React.DragEvent) => {
-      const newHeight = e.clientY - startYRef.current + startHeightRef.current;
-      onResize(index, newHeight);
+      const newWidth = e.clientX - startXRef.current + startWidthRef.current;
+      onResize(index, newWidth);
     },
     [index, onResize]
   );
 
   const handleDragEnd = useCallback(
     (e: React.DragEvent) => {
-      const newHeight = e.clientY - startYRef.current + startHeightRef.current;
-      onResize(index, newHeight);
+      const newWidth = e.clientX - startXRef.current + startWidthRef.current;
+      onResize(index, newWidth);
     },
     [index, onResize]
   );
@@ -50,17 +52,17 @@ const RowHeaderItem = (props: RowHeaderItemProps) => {
   return (
     <div
       className={classnames({
-        'row-header-item': true,
+        'col-header-item': true,
         selected: selected,
       })}
-      style={{ height: height }}
       onClick={handleClickHeader}
+      style={{ width: width }}
     >
-      {index + 1}
+      {numberToLetter(index + 1)}
       <div
         ref={triggerRef}
         draggable="true"
-        className="row-header-trigger"
+        className="col-header-trigger"
         onDragStart={handleDragStart}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
@@ -69,4 +71,4 @@ const RowHeaderItem = (props: RowHeaderItemProps) => {
   );
 };
 
-export default memo(RowHeaderItem);
+export default memo(ColHeaderItem);

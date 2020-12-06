@@ -4,6 +4,7 @@ import React, {
   CSSProperties,
   KeyboardEvent,
   useCallback,
+  memo,
 } from 'react';
 import classnames from 'classnames';
 
@@ -12,35 +13,50 @@ import { setCaretToEnd } from '../utils';
 interface CellProps {
   raw: string;
   style?: CSSProperties;
+  rowIdx: number;
+  colIdx: number;
+  rowSpan?: number;
+  colSpan?: number;
+  selected: boolean;
   onChange: (value: string) => void;
+  onSelect?: (rowIdx: number, colIdx: number) => void;
 }
 
 const Cell = (props: CellProps) => {
-  const { raw, style, onChange } = props;
+  const {
+    raw,
+    style,
+    rowIdx,
+    colIdx,
+    rowSpan,
+    colSpan,
+    selected,
+    onChange,
+    onSelect,
+  } = props;
   const contentWrapperRef = useRef<HTMLInputElement>(null);
 
   const [edit, setEdit] = useState(false);
 
   const handleDoubleClick = useCallback(() => {
-    setEdit(true);
-    setTimeout(() => {
-      setCaretToEnd(contentWrapperRef.current as HTMLElement);
-    }, 0);
-  }, []);
+    if (!edit) {
+      setEdit(true);
+      setTimeout(() => {
+        setCaretToEnd(contentWrapperRef.current as HTMLElement);
+      }, 0);
+    }
+  }, [edit]);
 
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
+      console.log(e);
       if (e.key === 'Enter' && !e.shiftKey) {
-        console.log(e);
         e.preventDefault();
         setEdit(false);
         if (contentWrapperRef.current) {
           const newValue = contentWrapperRef.current.innerText;
           if (newValue !== raw) {
-            console.log('changed');
             onChange(newValue);
-          } else {
-            console.log('unchanged');
           }
         }
       }
@@ -48,14 +64,39 @@ const Cell = (props: CellProps) => {
     [onChange, raw]
   );
 
+  const handleClickCell = useCallback(() => {
+    onSelect && onSelect(rowIdx, colIdx);
+  }, [rowIdx, colIdx, onSelect]);
+
+  const handleBlur = useCallback(() => {
+    if (edit) {
+      setEdit(false);
+    }
+  }, [edit]);
+
   return (
-    <td onDoubleClick={handleDoubleClick} className="cell" style={style}>
+    <td
+      onDoubleClick={handleDoubleClick}
+      onClick={handleClickCell}
+      className="cell"
+      style={style}
+      rowSpan={rowSpan}
+      colSpan={colSpan}
+      onKeyDown={() => console.log('y')}
+      data-row-idx={rowIdx}
+      data-col-idx={colIdx}
+    >
       <div
-        className={classnames('cell-content-wrapper', edit ? 'active' : null)}
+        className={classnames({
+          'cell-content-wrapper': true,
+          active: edit,
+        })}
+        onBlur={handleBlur}
         ref={contentWrapperRef}
         contentEditable={edit}
         suppressContentEditableWarning={true}
         onKeyPress={handleKeyPress}
+        onKeyDown={() => console.log('x')}
       >
         {raw}
       </div>
@@ -63,4 +104,4 @@ const Cell = (props: CellProps) => {
   );
 };
 
-export default Cell;
+export default memo(Cell);
