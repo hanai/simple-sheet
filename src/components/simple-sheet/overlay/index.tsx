@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 
-import { CellData, SheetLayout, SheetSelectedState } from '../types';
+import { SparseCellDatas, SheetLayout, SheetSelectedState } from '../types';
 import { getBoundaryCellsByCellSelectedState } from '../utils';
 
 import './style.scss';
@@ -8,7 +8,7 @@ import './style.scss';
 export interface OverlayProps {
   selectedState: SheetSelectedState;
   layout: SheetLayout;
-  cells: CellData[][];
+  cells: SparseCellDatas;
 }
 
 const Overlay = (props: OverlayProps) => {
@@ -20,6 +20,8 @@ const Overlay = (props: OverlayProps) => {
       cells,
       cellSeletedState
     );
+
+    if (startCell == null || endCell == null) return null;
 
     const { row: minR, col: minC } = startCell;
     let { row: maxR, col: maxC } = endCell;

@@ -9,31 +9,19 @@ import React, {
 import classnames from 'classnames';
 
 import { setCaretToEnd } from '../utils';
+import { CellData } from '../types';
 
 interface CellProps {
   raw: string;
   style?: CSSProperties;
-  rowIdx: number;
-  colIdx: number;
-  rowSpan?: number;
-  colSpan?: number;
+  cell: CellData;
   selected: boolean;
   onChange: (value: string) => void;
   onSelect?: (rowIdx: number, colIdx: number) => void;
 }
 
 const Cell = (props: CellProps) => {
-  const {
-    raw,
-    style,
-    rowIdx,
-    colIdx,
-    rowSpan,
-    colSpan,
-    selected,
-    onChange,
-    onSelect,
-  } = props;
+  const { raw, style, cell, selected, onChange, onSelect } = props;
   const contentWrapperRef = useRef<HTMLInputElement>(null);
 
   const [edit, setEdit] = useState(false);
@@ -49,7 +37,6 @@ const Cell = (props: CellProps) => {
 
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
-      console.log(e);
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         setEdit(false);
@@ -65,8 +52,8 @@ const Cell = (props: CellProps) => {
   );
 
   const handleClickCell = useCallback(() => {
-    onSelect && onSelect(rowIdx, colIdx);
-  }, [rowIdx, colIdx, onSelect]);
+    onSelect && onSelect(cell.row, cell.col);
+  }, [cell.row, cell.col, onSelect]);
 
   const handleBlur = useCallback(() => {
     if (edit) {
@@ -80,11 +67,10 @@ const Cell = (props: CellProps) => {
       onClick={handleClickCell}
       className="cell"
       style={style}
-      rowSpan={rowSpan}
-      colSpan={colSpan}
-      onKeyDown={() => console.log('y')}
-      data-row-idx={rowIdx}
-      data-col-idx={colIdx}
+      rowSpan={cell.rowSpan}
+      colSpan={cell.colSpan}
+      data-row-idx={cell.row}
+      data-col-idx={cell.col}
     >
       <div
         className={classnames({
@@ -96,9 +82,8 @@ const Cell = (props: CellProps) => {
         contentEditable={edit}
         suppressContentEditableWarning={true}
         onKeyPress={handleKeyPress}
-        onKeyDown={() => console.log('x')}
       >
-        {raw}
+        {cell.getValue()}
       </div>
     </td>
   );

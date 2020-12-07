@@ -5,6 +5,7 @@ import {
   SheetData,
   SheetLayout,
   SheetSelectedState,
+  SparseCellDatas,
 } from '../types';
 
 export * from './dom';
@@ -90,8 +91,7 @@ export const isCellSelected = (
   cell: { col: number; row: number },
   cellSelectedState: CellSelectedState
 ) => {
-  const [minR, minC] = cellSelectedState.start;
-  const [maxR, maxC] = cellSelectedState.end;
+  const [minR, minC, maxR, maxC] = cellSelectedState;
   const { row, col } = cell;
   return row >= minR && row <= maxR && col >= minC && col <= maxC;
 };
@@ -102,7 +102,7 @@ export const isCellSelected = (
 export const getCellByIdx = (
   rowIdx: number,
   colIdx: number,
-  cells: CellData[][]
+  cells: SparseCellDatas
 ) => {
   if (cells[rowIdx][colIdx] != null) {
     return cells[rowIdx][colIdx];
@@ -132,12 +132,11 @@ export const getCellByIdx = (
 };
 
 export const getBoundaryCellsByCellSelectedState = (
-  cells: CellData[][],
+  cells: SparseCellDatas,
   state: CellSelectedState
 ) => {
-  const [startRow, startCol] = state.start;
+  const [startRow, startCol, endRow, endCol] = state;
   const startCell = getCellByIdx(startRow, startCol, cells);
-  const [endRow, endCol] = state.end;
   const endCell = getCellByIdx(endRow, endCol, cells);
 
   return [startCell, endCell];
@@ -253,7 +252,7 @@ export const parseSheetData = (sheetData: SheetData) => {
 
   cells.forEach((cell) => {
     const { row, col } = cell;
-    parsed[row][col] = cell;
+    parsed[row][col] = new CellData(cell);
   });
 
   return parsed;

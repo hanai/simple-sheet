@@ -8,21 +8,30 @@ import {
   parseSheetData,
 } from './utils';
 
-import Cell from './cell';
-
-import './style.scss';
-import { SheetLayout, SheetSelectedState } from './types';
+import {
+  CellSelectedState,
+  SheetLayout,
+  SheetSelectedState,
+  SparseCellDatas,
+} from './types';
 import RowHeaderContainer from './row-header-container';
 import ColHeaderContainer from './col-header-container';
 import { ContextMenuType, show as showContextMenu } from './context-menu';
 import SheetOverlay from './overlay';
+import Cell from './cell';
+
+import * as ContextMenuMethods from './utils/context-menu-methods';
+
+import './style.scss';
 
 const SHEET_DATA = getDefaultSheetData();
 
 const SimpleSheet = (props) => {
   const [layout, setLayout] = useState<SheetLayout>(SHEET_DATA.layout);
 
-  const [cells, setCells] = useState(() => parseSheetData(SHEET_DATA));
+  const [cells, setCells] = useState<SparseCellDatas>(() =>
+    parseSheetData(SHEET_DATA)
+  );
 
   const [tableWidth, setTableWidth] = useState<number>();
 
@@ -99,20 +108,17 @@ const SimpleSheet = (props) => {
           e.button === 0 ||
           (e.button === 2 &&
             (selectedState.cells == null ||
-              rowIdx < selectedState.cells.start[0] ||
-              rowIdx > selectedState.cells.end[0] ||
-              colIdx < selectedState.cells.start[1] ||
-              colIdx > selectedState.cells.end[1]))
+              rowIdx < selectedState.cells[0] ||
+              rowIdx > selectedState.cells[2] ||
+              colIdx < selectedState.cells[1] ||
+              colIdx > selectedState.cells[3]))
         ) {
           // select single cell when primary click or secondary button click out of current selection
           setSelectedState(() => {
             return {
               rows: [],
               cols: [],
-              cells: {
-                start: [rowIdx, colIdx],
-                end: [rowIdx, colIdx],
-              },
+              cells: [rowIdx, colIdx, rowIdx, colIdx],
             };
           });
         }
@@ -137,10 +143,12 @@ const SimpleSheet = (props) => {
         return {
           rows: [],
           cols: [],
-          cells: {
-            start: [Math.min(rowIdx, startRow), Math.min(colIdx, startCol)],
-            end: [Math.max(rowIdx, startRow), Math.max(colIdx, startCol)],
-          },
+          cells: [
+            Math.min(rowIdx, startRow),
+            Math.min(colIdx, startCol),
+            Math.max(rowIdx, startRow),
+            Math.max(colIdx, startCol),
+          ],
         };
       });
     },
@@ -171,21 +179,39 @@ const SimpleSheet = (props) => {
   const handleContextMenuOnTable = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
 
-    if (selectedState.cells) {
+    if (selectedState.cells != null) {
       if (
-        selectedState.cells.start.join(',') ===
-        selectedState.cells.end.join(',')
+        selectedState.cells[0] === selectedState.cells[2] &&
+        selectedState.cells[1] === selectedState.cells[3]
       ) {
         showContextMenu({
           left: e.pageX,
           top: e.pageY,
           type: ContextMenuType.SINGLE_CELL,
+          onClickClearContent() {
+            ContextMenuMethods.clearContext(
+              selectedState.cells as CellSelectedState,
+              setCells
+            );
+          },
         });
       } else {
         showContextMenu({
           left: e.pageX,
           top: e.pageY,
           type: ContextMenuType.MULTIPLE_CELL,
+          onClickClearContent() {
+            ContextMenuMethods.clearContext(
+              selectedState.cells as CellSelectedState,
+              setCells
+            );
+          },
+          onClickMergeCells() {
+            ContextMenuMethods.mergeCells(
+              selectedState.cells as CellSelectedState,
+              setCells
+            );
+          },
         });
       }
     }
@@ -249,10 +275,7 @@ const SimpleSheet = (props) => {
                     <Cell
                       onChange={handleCellChange.bind(null, rowIdx, colIdx)}
                       key={colIdx}
-                      rowIdx={rowIdx}
-                      colIdx={colIdx}
-                      rowSpan={cellItem.rowSpan || 1}
-                      colSpan={cellItem.colSpan || 1}
+                      cell={cellItem}
                       selected={
                         selectedState.cells != null &&
                         isCellSelected(cellItem, selectedState.cells)
