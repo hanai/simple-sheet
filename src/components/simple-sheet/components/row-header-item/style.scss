@@ -1,0 +1,23 @@
+@import '../../variables.scss';
+
+.row-header-item {
+  @include header-item-base-style;
+  width: $row-header-item-width;
+  border-bottom-width: 0;
+  position: relative;
+
+  &.selected {
+    background-color: $row-col-header-item-selected-color;
+  }
+}
+
+.row-header-trigger {
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  cursor: row-resize;
+  opacity: 0;
+  z-index: 1;
+}

@@ -2,6 +2,7 @@ import React, { memo, useCallback, useRef } from 'react';
 import classnames from 'classnames';
 import { defaultCellHeight } from '../../constants';
 
+import './style.scss';
 export interface RowHeaderItemProps {
   index: number;
   selected: boolean;

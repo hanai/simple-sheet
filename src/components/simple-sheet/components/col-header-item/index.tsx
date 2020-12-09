@@ -2,9 +2,9 @@ import React, { memo, useCallback, useRef } from 'react';
 import classnames from 'classnames';
 import { numberToLetter } from '../../utils';
 
-import './style.scss';
 import { defaultCellWidth } from '../../constants';
 
+import './style.scss';
 export interface ColHeaderItemProps {
   index: number;
   selected: boolean;

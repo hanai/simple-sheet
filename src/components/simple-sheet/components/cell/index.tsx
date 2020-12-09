@@ -11,6 +11,8 @@ import classnames from 'classnames';
 import { setCaretToEnd } from '../../utils';
 import { CellData } from '../../types';
 
+import './style.scss';
+
 export interface CellProps {
   raw: string;
   style?: CSSProperties;
