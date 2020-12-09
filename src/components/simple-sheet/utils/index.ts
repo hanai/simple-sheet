@@ -130,50 +130,63 @@ export const getBoundaryCellsByCellSelectedState = (
   let ltCell = getCellByIdx(startRow, startCol, cells);
   let rbCell = getCellByIdx(endRow, endCol, cells);
 
-  let lbCell = getCellByIdx(rbCell.row, ltCell.col, cells);
-  let rtCell = getCellByIdx(ltCell.row, rbCell.col, cells);
-  while (
-    (lbCell.rowSpan !== 1 &&
-      lbCell.row + lbCell.rowSpan - rbCell.row - rbCell.rowSpan !== 0) ||
-    lbCell.col < ltCell.col ||
-    rtCell.row < ltCell.row ||
-    (rtCell.colSpan !== 1 &&
-      rtCell.col + rtCell.colSpan - rbCell.col - rbCell.colSpan !== 0)
-  ) {
-    ltCell = getCellByIdx(
-      Math.min(ltCell.row, rtCell.row),
-      Math.min(ltCell.col, lbCell.col),
-      cells
-    );
-    rbCell = getCellByIdx(
-      Math.max(
-        lbCell.row + lbCell.rowSpan - 1,
-        rbCell.row + rbCell.rowSpan - 1
-      ),
-      Math.max(
-        rtCell.col + rtCell.colSpan - 1,
-        rbCell.col + rbCell.colSpan - 1
-      ),
-      cells
-    );
+  let l = ltCell.col,
+    r = rbCell.col + rbCell.colSpan - 1,
+    t = ltCell.row,
+    b = rbCell.row + rbCell.rowSpan - 1;
 
-    lbCell = getCellByIdx(
-      Math.max(
-        lbCell.row + lbCell.rowSpan - 1,
-        rbCell.row + rbCell.rowSpan - 1
-      ),
-      Math.min(ltCell.row, rtCell.row),
-      cells
-    );
-    rtCell = getCellByIdx(
-      Math.min(ltCell.row, rtCell.row),
-      Math.max(
-        rtCell.col + rtCell.colSpan - 1,
-        rbCell.col + rbCell.colSpan - 1
-      ),
-      cells
-    );
+  let prevL, prevR, prevT, prevB;
+
+  while (prevL !== l || prevT !== t || prevR !== r || prevB !== b) {
+    prevT = t;
+    prevR = r;
+    prevB = b;
+    prevL = l;
+
+    // loop from lb -> rb -> rt -> lt -> lb
+    let maxB = b;
+    for (let i = l; i <= r; i++) {
+      const cell = getCellByIdx(b, i, cells);
+      const curB = cell.row + cell.rowSpan - 1;
+      if (curB > maxB) {
+        maxB = curB;
+      }
+    }
+    b = maxB;
+
+    let maxR = r;
+    for (let i = b; i >= t; i--) {
+      const cell = getCellByIdx(i, r, cells);
+      const curR = cell.col + cell.colSpan - 1;
+      if (curR > maxR) {
+        maxR = curR;
+      }
+    }
+    r = maxR;
+
+    let minT = t;
+    for (let i = r; i >= l; i--) {
+      const cell = getCellByIdx(t, i, cells);
+      const curT = cell.row;
+      if (curT < minT) {
+        minT = curT;
+      }
+    }
+    t = minT;
+
+    let minL = l;
+    for (let i = t; i <= b; i++) {
+      const cell = getCellByIdx(i, l, cells);
+      const curL = cell.col;
+      if (curL < minL) {
+        minL = curL;
+      }
+    }
+    l = minL;
   }
+
+  ltCell = getCellByIdx(t, l, cells);
+  rbCell = getCellByIdx(b, r, cells);
 
   return [ltCell, rbCell];
 };
