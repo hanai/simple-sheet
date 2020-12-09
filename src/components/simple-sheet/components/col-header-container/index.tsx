@@ -1,16 +1,16 @@
 import React, { memo } from 'react';
-import { useSelector } from 'react-redux';
 import ColHeaderItem from '../../containers/col-header-item';
-import { RootState } from '../../store';
 
 import './style.scss';
-export interface ColHeaderContainerProps {}
+export interface ColHeaderContainerProps {
+  colCount: number;
+}
 
 const ColHeaderContainer = (props: ColHeaderContainerProps) => {
-  const colsLayout = useSelector((state: RootState) => state.layout.cols);
+  const { colCount } = props;
   return (
     <div className="cols-header-container">
-      {colsLayout.map((col, idx) => (
+      {Array.from({ length: colCount }, (_, idx) => (
         <ColHeaderItem key={idx} index={idx} />
       ))}
     </div>

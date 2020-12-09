@@ -19,7 +19,7 @@ export interface CellProps {
   cell: CellData;
   selected: boolean;
   onChange: (value: string) => void;
-  onSelect?: (rowIdx: number, colIdx: number) => void;
+  onSelect?: () => void;
 }
 
 const Cell = (props: CellProps) => {
@@ -54,8 +54,8 @@ const Cell = (props: CellProps) => {
   );
 
   const handleClickCell = useCallback(() => {
-    onSelect && onSelect(cell.row, cell.col);
-  }, [cell.row, cell.col, onSelect]);
+    onSelect && onSelect();
+  }, [onSelect]);
 
   const handleBlur = useCallback(() => {
     if (edit) {

@@ -7,11 +7,10 @@ import store from './store';
 
 import { getDefaultSheetData, parseSheetData } from './utils';
 
-import RowHeaderContainer from './components/row-header-container';
-import ColHeaderContainer from './components/col-header-container';
-
 import { setCells } from './store/slices/cells';
 
+import ColHeaderContainer from './containers/col-header-container';
+import RowHeaderContainer from './containers/row-header-container';
 import ContextMenu from './containers/context-menu';
 import SheetOverlay from './containers/overlay';
 import SheetTable from './containers/sheet-table';

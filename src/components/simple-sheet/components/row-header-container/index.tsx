@@ -1,18 +1,18 @@
 import React, { memo } from 'react';
-import { useSelector } from 'react-redux';
 
 import RowHeaderItem from '../../containers/row-header-item';
 
 import './style.scss';
-import { RootState } from '../../store';
 
-export interface RowHeaderContainerProps {}
+export interface RowHeaderContainerProps {
+  rowCount: number;
+}
 
 const RowHeaderContainer = (props: RowHeaderContainerProps) => {
-  const rowsLayout = useSelector((state: RootState) => state.layout.rows);
+  const { rowCount } = props;
   return (
     <div className="rows-header-container">
-      {rowsLayout.map((row, idx) => (
+      {Array.from({ length: rowCount }, (_, idx) => (
         <RowHeaderItem key={idx} index={idx} />
       ))}
     </div>
