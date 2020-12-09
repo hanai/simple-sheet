@@ -8,10 +8,10 @@ import React, {
 } from 'react';
 import classnames from 'classnames';
 
-import { setCaretToEnd } from '../utils';
-import { CellData } from '../types';
+import { setCaretToEnd } from '../../utils';
+import { CellData } from '../../types';
 
-interface CellProps {
+export interface CellProps {
   raw: string;
   style?: CSSProperties;
   cell: CellData;
@@ -58,14 +58,23 @@ const Cell = (props: CellProps) => {
   const handleBlur = useCallback(() => {
     if (edit) {
       setEdit(false);
+      if (contentWrapperRef.current) {
+        const newValue = contentWrapperRef.current.innerText;
+        if (newValue !== raw) {
+          onChange(newValue);
+        }
+      }
     }
-  }, [edit]);
+  }, [edit, raw, onChange]);
 
   return (
     <td
       onDoubleClick={handleDoubleClick}
       onClick={handleClickCell}
-      className="cell"
+      className={classnames({
+        cell: true,
+        selected: selected,
+      })}
       style={style}
       rowSpan={cell.rowSpan}
       colSpan={cell.colSpan}
@@ -83,7 +92,7 @@ const Cell = (props: CellProps) => {
         suppressContentEditableWarning={true}
         onKeyPress={handleKeyPress}
       >
-        {cell.getValue()}
+        {cell.raw}
       </div>
     </td>
   );

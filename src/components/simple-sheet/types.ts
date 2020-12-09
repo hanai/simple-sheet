@@ -18,45 +18,27 @@ export interface SheetSelectedState {
 
 export type SparseCellDatas = (CellData | undefined)[][];
 
-export interface PlainCellData {
-  row: number;
-  col: number;
-  raw: string;
-  rowSpan?: number;
-  colSpan?: number;
+export enum CellType {
+  NORMAL,
+  PLACEHOLDER,
 }
-
 export interface CellData {
   row: number;
   col: number;
-  raw: string;
+  raw?: string;
   rowSpan: number;
   colSpan: number;
+  type: CellType;
 }
-export class CellData {
-  constructor(data: {
+export interface SheetData {
+  cells: {
     row: number;
     col: number;
     raw: string;
     rowSpan?: number;
     colSpan?: number;
-  }) {
-    this.row = data.row;
-    this.col = data.col;
-    this.raw = data.raw;
-    this.rowSpan = data.rowSpan || 1;
-    this.colSpan = data.colSpan || 1;
-  }
-
-  setValue(value: string) {
-    this.raw = value;
-  }
-
-  getValue() {
-    return this.raw;
-  }
-}
-export interface SheetData {
-  cells: PlainCellData[];
+  }[];
   layout: SheetLayout;
 }
+
+export type CellIndex = [number, number];

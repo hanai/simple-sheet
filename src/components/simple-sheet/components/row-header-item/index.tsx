@@ -1,16 +1,17 @@
 import React, { memo, useCallback, useRef } from 'react';
 import classnames from 'classnames';
+import { defaultCellHeight } from '../../constants';
 
 export interface RowHeaderItemProps {
   index: number;
-  height: number;
   selected: boolean;
-  onResize: (index: number, height: number) => void;
-  onSelect: (index: number) => void;
+  height: number;
+  onResize: (height: number) => void;
+  onSelect: () => void;
 }
 
 const RowHeaderItem = (props: RowHeaderItemProps) => {
-  const { index, height, selected, onResize, onSelect } = props;
+  const { index, selected, height, onResize, onSelect } = props;
 
   const startYRef = useRef<number>(0);
   const startHeightRef = useRef<number>(height);
@@ -28,30 +29,30 @@ const RowHeaderItem = (props: RowHeaderItemProps) => {
   const handleDrag = useCallback(
     (e: React.DragEvent) => {
       const newHeight = e.clientY - startYRef.current + startHeightRef.current;
-      onResize(index, newHeight);
+      if (newHeight < defaultCellHeight) return;
+      onResize(newHeight);
     },
-    [index, onResize]
+    [onResize]
   );
 
   const handleDragEnd = useCallback(
     (e: React.DragEvent) => {
       const newHeight = e.clientY - startYRef.current + startHeightRef.current;
-      onResize(index, newHeight);
+      if (newHeight < defaultCellHeight) return;
+      onResize(newHeight);
     },
-    [index, onResize]
+    [onResize]
   );
 
   const handleClickHeader = useCallback(() => {
-    if (!selected) {
-      onSelect(index);
-    }
-  }, [index, onSelect, selected]);
+    onSelect();
+  }, [onSelect]);
 
   return (
     <div
       className={classnames({
         'row-header-item': true,
-        selected: selected,
+        active: selected,
       })}
       style={{ height: height }}
       onClick={handleClickHeader}

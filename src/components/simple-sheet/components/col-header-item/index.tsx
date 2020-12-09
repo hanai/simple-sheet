@@ -1,19 +1,21 @@
 import React, { memo, useCallback, useRef } from 'react';
 import classnames from 'classnames';
-import { numberToLetter } from '../utils';
+import { numberToLetter } from '../../utils';
 
 import './style.scss';
+import { defaultCellWidth } from '../../constants';
 
 export interface ColHeaderItemProps {
   index: number;
-  width: number;
   selected: boolean;
-  onResize: (index: number, height: number) => void;
-  onSelect: (index: number) => void;
+  width: number;
+  onResize: (width: number) => void;
+  onSelect: () => void;
 }
 
 const ColHeaderItem = (props: ColHeaderItemProps) => {
-  const { index, width, onResize, selected, onSelect } = props;
+  const { index, selected, width, onResize, onSelect } = props;
+
   const startXRef = useRef<number>(0);
   const startWidthRef = useRef<number>(width);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -30,30 +32,30 @@ const ColHeaderItem = (props: ColHeaderItemProps) => {
   const handleDrag = useCallback(
     (e: React.DragEvent) => {
       const newWidth = e.clientX - startXRef.current + startWidthRef.current;
-      onResize(index, newWidth);
+      if (newWidth < defaultCellWidth) return;
+      onResize(newWidth);
     },
-    [index, onResize]
+    [onResize]
   );
 
   const handleDragEnd = useCallback(
     (e: React.DragEvent) => {
       const newWidth = e.clientX - startXRef.current + startWidthRef.current;
-      onResize(index, newWidth);
+      if (newWidth < defaultCellWidth) return;
+      onResize(newWidth);
     },
-    [index, onResize]
+    [onResize]
   );
 
   const handleClickHeader = useCallback(() => {
-    if (!selected) {
-      onSelect(index);
-    }
-  }, [index, onSelect, selected]);
+    onSelect();
+  }, [onSelect]);
 
   return (
     <div
       className={classnames({
         'col-header-item': true,
-        selected: selected,
+        active: selected,
       })}
       onClick={handleClickHeader}
       style={{ width: width }}

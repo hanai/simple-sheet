@@ -2,10 +2,9 @@ import { defaultCellHeight, defaultCellWidth } from '../constants';
 import {
   CellData,
   CellSelectedState,
+  CellType,
   SheetData,
   SheetLayout,
-  SheetSelectedState,
-  SparseCellDatas,
 } from '../types';
 
 export * from './dom';
@@ -45,7 +44,7 @@ export const clearSelection = () => {
 
 export const setCaretPosition = (ele: HTMLElement, pos: number) => {
   const range = document.createRange();
-  range.setStart(ele.childNodes[0], pos);
+  range.setStart(ele.childNodes[0] || ele, pos);
   range.collapse(true);
 
   const selection = window.getSelection();
@@ -76,14 +75,6 @@ export const getDefaultLayout = (
   };
 };
 
-export const getDefaultSelectedState = (): SheetSelectedState => {
-  return {
-    cols: [],
-    rows: [],
-    cells: null,
-  };
-};
-
 /**
  * detect if cell is selected
  */
@@ -102,16 +93,16 @@ export const isCellSelected = (
 export const getCellByIdx = (
   rowIdx: number,
   colIdx: number,
-  cells: SparseCellDatas
+  cells: CellData[][]
 ) => {
-  if (cells[rowIdx][colIdx] != null) {
+  if (cells[rowIdx][colIdx].type !== CellType.PLACEHOLDER) {
     return cells[rowIdx][colIdx];
   }
 
   for (let i = colIdx; i >= 0; i--) {
     const cell = cells[rowIdx][i];
-    if (cell) {
-      if ((cell.colSpan || 1) + cell.col - 1 === colIdx) {
+    if (cell.type !== CellType.PLACEHOLDER) {
+      if (cell.colSpan + cell.col - 1 >= colIdx) {
         colIdx = cell.col;
       }
       break;
@@ -120,8 +111,8 @@ export const getCellByIdx = (
 
   for (let i = rowIdx; i >= 0; i--) {
     const cell = cells[i][colIdx];
-    if (cell) {
-      if ((cell.rowSpan || 1) + cell.row - 1 === rowIdx) {
+    if (cell.type !== CellType.PLACEHOLDER) {
+      if (cell.rowSpan + cell.row - 1 >= rowIdx) {
         rowIdx = cell.row;
       }
       break;
@@ -132,14 +123,59 @@ export const getCellByIdx = (
 };
 
 export const getBoundaryCellsByCellSelectedState = (
-  cells: SparseCellDatas,
+  cells: CellData[][],
   state: CellSelectedState
 ) => {
   const [startRow, startCol, endRow, endCol] = state;
-  const startCell = getCellByIdx(startRow, startCol, cells);
-  const endCell = getCellByIdx(endRow, endCol, cells);
+  let ltCell = getCellByIdx(startRow, startCol, cells);
+  let rbCell = getCellByIdx(endRow, endCol, cells);
 
-  return [startCell, endCell];
+  let lbCell = getCellByIdx(rbCell.row, ltCell.col, cells);
+  let rtCell = getCellByIdx(ltCell.row, rbCell.col, cells);
+  while (
+    (lbCell.rowSpan !== 1 &&
+      lbCell.row + lbCell.rowSpan - rbCell.row - rbCell.rowSpan !== 0) ||
+    lbCell.col < ltCell.col ||
+    rtCell.row < ltCell.row ||
+    (rtCell.colSpan !== 1 &&
+      rtCell.col + rtCell.colSpan - rbCell.col - rbCell.colSpan !== 0)
+  ) {
+    ltCell = getCellByIdx(
+      Math.min(ltCell.row, rtCell.row),
+      Math.min(ltCell.col, lbCell.col),
+      cells
+    );
+    rbCell = getCellByIdx(
+      Math.max(
+        lbCell.row + lbCell.rowSpan - 1,
+        rbCell.row + rbCell.rowSpan - 1
+      ),
+      Math.max(
+        rtCell.col + rtCell.colSpan - 1,
+        rbCell.col + rbCell.colSpan - 1
+      ),
+      cells
+    );
+
+    lbCell = getCellByIdx(
+      Math.max(
+        lbCell.row + lbCell.rowSpan - 1,
+        rbCell.row + rbCell.rowSpan - 1
+      ),
+      Math.min(ltCell.row, rtCell.row),
+      cells
+    );
+    rtCell = getCellByIdx(
+      Math.min(ltCell.row, rtCell.row),
+      Math.max(
+        rtCell.col + rtCell.colSpan - 1,
+        rbCell.col + rbCell.colSpan - 1
+      ),
+      cells
+    );
+  }
+
+  return [ltCell, rbCell];
 };
 
 export const getDefaultSheetData = (): SheetData => {
@@ -243,16 +279,37 @@ export const getDefaultSheetData = (): SheetData => {
   };
 };
 
-export const parseSheetData = (sheetData: SheetData) => {
+export const parseSheetData = (sheetData: SheetData): CellData[][] => {
   const { layout, cells } = sheetData;
-  let parsed = Array.from(
-    { length: layout.rows.length },
-    () => new Array(layout.cols.length)
-  );
+  let parsed = Array.from({ length: layout.rows.length }, (_, row) =>
+    Array.from({ length: layout.cols.length }, (_, col) => ({
+      row: row,
+      col: col,
+      rowSpan: 1,
+      colSpan: 1,
+    }))
+  ) as CellData[][];
 
   cells.forEach((cell) => {
-    const { row, col } = cell;
-    parsed[row][col] = new CellData(cell);
+    const { row, col, rowSpan = 1, colSpan = 1 } = cell;
+    parsed[row][col] = {
+      ...cell,
+      row,
+      col,
+      rowSpan,
+      colSpan,
+      type: CellType.NORMAL,
+    };
+
+    if (rowSpan > 1 || colSpan > 1) {
+      for (let i = row; i <= row + rowSpan - 1; i++) {
+        for (let j = col; j <= col + colSpan - 1; j++) {
+          if (i !== row || j !== col) {
+            parsed[i][j].type = CellType.PLACEHOLDER;
+          }
+        }
+      }
+    }
   });
 
   return parsed;

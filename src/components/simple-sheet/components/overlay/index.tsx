@@ -1,19 +1,19 @@
 import React, { memo } from 'react';
 
-import { SparseCellDatas, SheetLayout, SheetSelectedState } from '../types';
-import { getBoundaryCellsByCellSelectedState } from '../utils';
+import { CellData, SheetLayout, SheetSelectedState } from '../../types';
+import { getBoundaryCellsByCellSelectedState } from '../../utils';
 
 import './style.scss';
 
 export interface OverlayProps {
-  selectedState: SheetSelectedState;
+  cells: CellData[][];
+  selection: SheetSelectedState;
   layout: SheetLayout;
-  cells: SparseCellDatas;
 }
 
 const Overlay = (props: OverlayProps) => {
-  const { selectedState, layout, cells } = props;
-  const { cells: cellSeletedState } = selectedState;
+  const { cells, selection, layout } = props;
+  const { cells: cellSeletedState } = selection;
 
   if (cellSeletedState != null) {
     const [startCell, endCell] = getBoundaryCellsByCellSelectedState(

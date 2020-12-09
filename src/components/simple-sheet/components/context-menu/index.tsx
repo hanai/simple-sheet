@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import ReactDOM from 'react-dom';
 
 import './style.scss';
 
@@ -90,20 +89,3 @@ ContextMenu.defaultProps = {
 };
 
 export default ContextMenu;
-
-let container;
-
-export const show = (props: ContextMenuProps) => {
-  if (!container) {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-  }
-  ReactDOM.render(
-    <ContextMenu
-      {...props}
-      visible={true}
-      onHide={() => ReactDOM.unmountComponentAtNode(container)}
-    />,
-    container
-  );
-};
