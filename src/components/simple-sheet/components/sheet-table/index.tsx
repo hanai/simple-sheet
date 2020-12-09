@@ -129,16 +129,19 @@ const SheetTable = (props: SheetTableProps) => {
       e.preventDefault();
 
       if (selection.cells != null) {
+        // has selection
         if (
           selection.cells[0] === selection.cells[2] &&
           selection.cells[1] === selection.cells[3]
         ) {
+          // has single cell selected
           onShowContextMenu({
             left: e.pageX,
             top: e.pageY,
             type: ContextMenuType.SINGLE_CELL,
           });
         } else {
+          // has multiple cells selected
           onShowContextMenu({
             left: e.pageX,
             top: e.pageY,
