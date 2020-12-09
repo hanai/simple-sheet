@@ -8,7 +8,7 @@ export type CellContainerProps = Omit<CellProps, 'onChange'>;
 
 const CellContainer = (props: CellContainerProps) => {
   const { row, col } = props.cell;
-  const { dispatch } = useDispatch();
+  const dispatch = useDispatch();
   const onChangeCell = useCallback(
     (value) => {
       dispatch(
